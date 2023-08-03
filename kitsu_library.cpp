@@ -4,7 +4,6 @@
 #include<curl/curl.h>
 #include<jsoncpp/json/json.h>
 
-int i = 1;
 // Abre o arquivo de texto para escrita
 std::ofstream txt("animes_library.txt");
 
@@ -15,8 +14,8 @@ size_t writeCallback(char* data, size_t size, size_t nmemb, std::string* buffer)
     return totalSize;
 }
 
-// Função para fazer uma requisição CURL para obter os dados da API
-std::string getCurl(std::string link){
+// Função para fazer uma requisição CURL para o bter os dados da API
+std::string getCurl(std::string link) {
 
     CURLcode res;
     CURL *curl = curl_easy_init();
@@ -40,7 +39,7 @@ std::string getCurl(std::string link){
 }
 
 // Função para extrair informações relevantes do JSON recebido da API e escrevê-las no arquivo de texto
-void infoAnime(std::string responseData){
+void infoAnime(std::string responseData, int i) {
     Json::CharReaderBuilder builder;
     Json::CharReader* reader = builder.newCharReader();
 
@@ -71,7 +70,7 @@ void infoAnime(std::string responseData){
 }
 
 // Função para ler os dados JSON recebidos da API e extrair as informações de cada anime
-void readerJson(std::string responseData){
+void readerJson(std::string responseData, int i) {
 
     Json::CharReaderBuilder builder;
     Json::CharReader* reader = builder.newCharReader();
@@ -95,7 +94,7 @@ void readerJson(std::string responseData){
         std::string animeLink = anime["links"]["related"].asString();
 
         // Obtém informações detalhadas do anime
-        infoAnime(getCurl(animeLink));
+        infoAnime(getCurl(animeLink), i);
         
         // Incrementa o contador de anime
         i++;
@@ -109,21 +108,25 @@ void readerJson(std::string responseData){
 
     std::string nextPage = getCurl(root["links"]["next"].asString());
     std::cout << i << std::endl;
-    readerJson(nextPage);
+    readerJson(nextPage, i);
 }
 
-int main(){
-    std::string id;
-    std::cout << "Enter your id: ";
-    std::cin >> id;
-    std::cout << std::endl;
-    
+int main(int argc, char* argv[]) {
+    int i = 1;
+
+    if(argc != 2) {
+        std::cout << "Uso correto: " << argv[0] << " <ID do usuario>" << std::endl;
+        return 1;
+    }
+
+    std::string id = argv[1];
+
     // Realiza a primeira requisição CURL para obter os dados da API
     std::string link = "https://kitsu.io/api/edge/users/"+ id +"/library-entries?page[limit]=20&page[offset]=0";
     std::string responseData = getCurl(link);
 
     // Lê os dados JSON recebidos e extrai as informações relevantes para cada anime
-    readerJson(responseData);
+    readerJson(responseData, i);
 
     // Fecha o arquivo de texto após a escrita dos dados
     txt.close();
