@@ -1,1 +1,1 @@
-Desenvolvi o código com fins de estudo.
+Desenvolvi o código para fins de estudo.
